@@ -41,6 +41,8 @@ import json
 # Setting up relevant filepaths
 # ========================================
 # The main\resources folder
+template_path = r"C:\Users\Julio Hong\Documents\LapisLiozuli\laplio-template-mod"
+template_res_path = path.join(template_path, r"src\main\resources\modid\\")
 resources_path = r"C:\Users\Julio Hong\Documents\LapisLiozuli\Warehouse_Exhibition\src\main\resources"
 mod_id = "warex"
 
@@ -85,6 +87,20 @@ object_types_all = ['slime_block', 'slime_ball', 'slime_entity']
 
 # All functions
 # ========================================
+# A function that takes in a path, modid and object name to create an appropriately-pathed JSON based on a template.
+# I'm actually missing the typing restrictions of Java. What are these variables supposed to be?
+def modify_template_from_input(output_path, modid, object_name):
+    template_json = path.join(template_res_path, )
+
+
+
+
+
+
+
+
+
+
 # A function to generate the object name based on all available colours
 def generate_dyed_objects(object_type, dye_colours, suffix=''):
     # Might want to add a check to determine if the colours goes in front or behind
