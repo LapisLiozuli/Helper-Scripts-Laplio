@@ -32,6 +32,7 @@ Resources folder structure
         ◦ Tags
 """
 from os import path
+import pathlib
 # from os import listdir
 from shutil import move, copy
 from copy import deepcopy
@@ -42,7 +43,7 @@ import json
 # ========================================
 # The main\resources folder
 template_path = r"C:\Users\Julio Hong\Documents\LapisLiozuli\laplio-template-mod"
-output_path = r"C:\Users\Julio Hong\Documents\LapisLiozuli\Warehouse_Exhibition"
+output_path = r"C:\Users\Julio Hong\Documents\LapisLiozuli\Warehouse-Exhibition-MC"
 resources_path = r"src\main\resources"
 template_modid = "modid"
 output_modid = "warex"
@@ -89,7 +90,7 @@ object_types_all = ['slime_block', 'slime_ball', 'slime_entity']
 
 # All functions
 # ========================================
-def text_guide():
+def text_guide_singular():
     print("Please input the parameters in this format:")
     print("modify_template_from_input(output_modid, assets_or_data, final_path, object_json, object_name, placeholder='placeholder.json')")
     # Include available pathlets
@@ -103,7 +104,7 @@ def text_guide():
     print(loot_blocks_pathlet)
     print(loot_entities_pathlet)
 
-text_guide()
+text_guide_singular()
 
 
 # A function that takes in a path, modid and object name to create an appropriately-pathed JSON based on a template.
@@ -113,86 +114,45 @@ def modify_template_from_input(output_modid, assets_or_data, final_path, object_
     # Choose between assets_path or data_path.
     if assets_or_data == "assets":
         template_json = path.join(template_path, assets_path, template_modid, final_path, placeholder)
+        specific_output_path = path.join(output_path, assets_path, output_modid, final_path)
     elif assets_or_data == "data":
         template_json = path.join(template_path, data_path, template_modid, final_path, placeholder)
-    # Create the output path
-    output_json = path.join(output_modid, resources_path, output_modid, final_path, object_json + ".json")
+        specific_output_path = path.join(output_path, data_path, output_modid, final_path)
+    # Creates the output directories and subdirectories if they don't already exist.
+    print(specific_output_path)
+    pathlib.Path(specific_output_path).mkdir(parents=True, exist_ok=True)
+    # Create the output JSON.
+    output_json = path.join(specific_output_path, object_json + ".json")
 
     with open(template_json, 'r+') as f:
         # Load JSON as Python object
         data = json.load(f)
-        # print('data is ' + data)
-        print('data is ' + str(data))
+        # Convert to string for string manipulation.
+        input_str_json = json.dumps(data)
+        print('input_str_json is ' + input_str_json)
 
         # Replace all mentions of 'modid' with output_modid.
+        output_str_json = input_str_json.replace('modid', output_modid)
         # Replace all mentions of 'template' or variants with object_name.
         # Check for variants first, then finally template.
-        if "template_block" in data:
-            pass
-        if "template_item" in data:
-            pass
-        if "template_entity" in data:
-            pass
-        if "template" in data:
-            pass
+        text_checks = ["template_block", "template_item", "template_entity", "template"]
+        for check in text_checks:
+            if check in output_str_json:
+                output_str_json = output_str_json.replace(check, object_name)
+                print('output_str_json is ' + output_str_json)
+
+        # Convert to JSON.
+        output_data = json.loads(output_str_json)
+
+        # Opens file for reading and writing. File is created if it did not already exist.
+        g = open(output_json, 'a+')
+        g.seek(0)
+        json.dump(output_data, g, indent=2, separators=(',', ':'))
+        f.close()
+        g.close()
 
 
-
-
-
-        # # Edit the input fields
-        # # If ns_list[0] is a single entry in the case of Block Model.
-        # if type(specific_namespace[0]) != list:
-        #     for entry in specific_namespace[1]:
-        #         data[specific_namespace[0]][entry] = json_input
-        #
-        #     # May have to edit this data format separately
-        #     g = open(output_json, 'a+')
-        #     # data = CompactJSONEncoder().encode(data)
-        #     g.seek(0)
-        #     json.dump(data, g, indent=2, separators=(',', ':'))
-        #     # json.dump(data, g, indent=2, separators=(',', ':'), cls=CompactJSONEncoder)
-        #     f.close()
-        #     g.close()
-        #
-        # # Or if it's a list, recursively declare a variable to get to the input field within these nested dicts/lists.
-        # elif type(specific_namespace[0]) == list:
-        #     pointer = data
-        #     # Keep moving down a nested layer
-        #     while len(specific_namespace[0]) > 1:
-        #         # print(specific_namespace[0])
-        #         pointer = pointer[specific_namespace[0][0]]
-        #         specific_namespace[0].pop(0)
-        #     # The most nested value is reached
-        #     pointer[specific_namespace[0][0]] = json_input
-        # # print(pointer)
-        # # print(data)
-        #
-        # # # Write to output file
-        # # # Only r+ can both read and write
-        # # data['pools'][0]['entries'][0]['name'] = 'ohno'
-        # # # a+ to create file if it doesn't already exist
-        # # # Might want to add in a check for exists()
-        # # g = open(path.join(loot_blocks_path, 'slime_block_black.json'), 'a+')
-        #
-        # # a+ to create file if it doesn't already exist
-        # # Might want to add in a check for exists()
-        # g = open(output_json, 'a+')
-        # g.seek(0)
-        # json.dump(data, g, indent=2, separators=(',', ':'))
-        # f.close()
-        # g.close()
-        #
-        # return data
-
-
-
-
-
-
-
-
-
+# Next step is to run multiple rounds for a block.
 
 # A function to generate the object name based on all available colours
 def generate_dyed_objects(object_type, dye_colours, suffix=''):
