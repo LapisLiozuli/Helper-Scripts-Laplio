@@ -42,33 +42,36 @@ import json
 # ========================================
 # The main\resources folder
 template_path = r"C:\Users\Julio Hong\Documents\LapisLiozuli\laplio-template-mod"
-template_res_path = path.join(template_path, r"src\main\resources\modid\\")
-resources_path = r"C:\Users\Julio Hong\Documents\LapisLiozuli\Warehouse_Exhibition\src\main\resources"
-mod_id = "warex"
+output_path = r"C:\Users\Julio Hong\Documents\LapisLiozuli\Warehouse_Exhibition"
+resources_path = r"src\main\resources"
+template_modid = "modid"
+output_modid = "warex"
 
 # The main\resources\assets folder
-assets_path = path.join(resources_path, r"assets\\" + mod_id)
+assets_path = path.join(resources_path, r"assets")
+# Final paths.
 # The assets\blockstates folder
-blockstates_path = path.join(assets_path, "blockstates")
+blockstates_pathlet = "blockstates"
 # The assets\lang folder
-lang_path = path.join(assets_path, "lang")
-lang_en_US_path = path.join(lang_path, "en_US.json")
+lang_pathlet = "lang"
+lang_en_US_pathlet = path.join(lang_pathlet, "en_US.json")
 # The assets\models folder
-models_path = path.join(assets_path, "models")
-mdl_block_path = path.join(models_path, "block")
-mdl_item_path = path.join(models_path, "item")
+models_pathlet = "models"
+mdl_block_pathlet = path.join(models_pathlet, "block")
+mdl_item_pathlet = path.join(models_pathlet, "item")
 # The assets\textures folder
-textures_path = path.join(assets_path, "textures")
-txtr_blocks_path = path.join(textures_path, "block")
-txtr_items_path = path.join(textures_path, "items")
-txtr_entities_path = path.join(textures_path, "entity")
+textures_pathlet = "textures"
+txtr_blocks_pathlet = path.join(textures_pathlet, "block")
+txtr_items_pathlet = path.join(textures_pathlet, "items")
+txtr_entities_pathlet = path.join(textures_pathlet, "entity")
 
 # The main\resources\data folder
-data_path = path.join(resources_path, r"data\\" + mod_id)
-recipes_path = path.join(data_path, "recipes")
-loot_tables_path = path.join(data_path, "loot_tables")
-loot_blocks_path = path.join(loot_tables_path, "blocks")
-loot_entities_path = path.join(loot_tables_path, "entities")
+data_path = path.join(resources_path, r"data")
+# Final paths.
+recipes_pathlet = "recipes"
+loot_tables_pathlet = "loot_tables"
+loot_blocks_pathlet = path.join(loot_tables_pathlet, "blocks")
+loot_entities_pathlet = "entities"
 
 
 # Own Mod Graphics folder
@@ -84,13 +87,103 @@ dye_colours_CN = ['白色', '橙色', '品红色', '淡蓝色', '黄色', '黄�
 object_types_all = ['slime_block', 'slime_ball', 'slime_entity']
 
 
-
 # All functions
 # ========================================
+def text_guide():
+    print("Please input the parameters in this format:")
+    print("modify_template_from_input(output_modid, assets_or_data, final_path, object_json, object_name, placeholder='placeholder.json')")
+    # Include available pathlets
+    print(assets_path)
+    print(lang_pathlet)
+    print(blockstates_pathlet)
+    print(mdl_block_pathlet)
+    print(mdl_item_pathlet)
+    print("")
+    print(data_path)
+    print(loot_blocks_pathlet)
+    print(loot_entities_pathlet)
+
+text_guide()
+
+
 # A function that takes in a path, modid and object name to create an appropriately-pathed JSON based on a template.
 # I'm actually missing the typing restrictions of Java. What are these variables supposed to be?
-def modify_template_from_input(output_path, modid, object_name):
-    template_json = path.join(template_res_path, )
+def modify_template_from_input(output_modid, assets_or_data, final_path, object_json, object_name, placeholder="placeholder.json"):
+    # template_path, resources_path and template_modid are global variables.
+    # Choose between assets_path or data_path.
+    if assets_or_data == "assets":
+        template_json = path.join(template_path, assets_path, template_modid, final_path, placeholder)
+    elif assets_or_data == "data":
+        template_json = path.join(template_path, data_path, template_modid, final_path, placeholder)
+    # Create the output path
+    output_json = path.join(output_modid, resources_path, output_modid, final_path, object_json + ".json")
+
+    with open(template_json, 'r+') as f:
+        # Load JSON as Python object
+        data = json.load(f)
+        # print('data is ' + data)
+        print('data is ' + str(data))
+
+        # Replace all mentions of 'modid' with output_modid.
+        # Replace all mentions of 'template' or variants with object_name.
+        # Check for variants first, then finally template.
+        if "template_block" in data:
+            pass
+        if "template_item" in data:
+            pass
+        if "template_entity" in data:
+            pass
+        if "template" in data:
+            pass
+
+
+
+
+
+        # # Edit the input fields
+        # # If ns_list[0] is a single entry in the case of Block Model.
+        # if type(specific_namespace[0]) != list:
+        #     for entry in specific_namespace[1]:
+        #         data[specific_namespace[0]][entry] = json_input
+        #
+        #     # May have to edit this data format separately
+        #     g = open(output_json, 'a+')
+        #     # data = CompactJSONEncoder().encode(data)
+        #     g.seek(0)
+        #     json.dump(data, g, indent=2, separators=(',', ':'))
+        #     # json.dump(data, g, indent=2, separators=(',', ':'), cls=CompactJSONEncoder)
+        #     f.close()
+        #     g.close()
+        #
+        # # Or if it's a list, recursively declare a variable to get to the input field within these nested dicts/lists.
+        # elif type(specific_namespace[0]) == list:
+        #     pointer = data
+        #     # Keep moving down a nested layer
+        #     while len(specific_namespace[0]) > 1:
+        #         # print(specific_namespace[0])
+        #         pointer = pointer[specific_namespace[0][0]]
+        #         specific_namespace[0].pop(0)
+        #     # The most nested value is reached
+        #     pointer[specific_namespace[0][0]] = json_input
+        # # print(pointer)
+        # # print(data)
+        #
+        # # # Write to output file
+        # # # Only r+ can both read and write
+        # # data['pools'][0]['entries'][0]['name'] = 'ohno'
+        # # # a+ to create file if it doesn't already exist
+        # # # Might want to add in a check for exists()
+        # # g = open(path.join(loot_blocks_path, 'slime_block_black.json'), 'a+')
+        #
+        # # a+ to create file if it doesn't already exist
+        # # Might want to add in a check for exists()
+        # g = open(output_json, 'a+')
+        # g.seek(0)
+        # json.dump(data, g, indent=2, separators=(',', ':'))
+        # f.close()
+        # g.close()
+        #
+        # return data
 
 
 
