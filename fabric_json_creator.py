@@ -6,16 +6,72 @@ Date created: Mon Nov 2 23:37:44 2020
 Purpose: Automate the creation and placement of multiple JSONs for addition of content to Minecraft Fabric mod
         Specifically, for dyed blocks which can get quite tedious.
 Steps:
-0. Initialise list of dye colours
 1. Determine the class to add.
 2. Find the relevant directories for each class.
 3. Design format for each type of JSON.
+
+Initialise list of dye colours
+
+Resources folder structure
+    • Assets
+        ◦ Blockstates
+        ◦ Lang (Or just automatically generate the entry with a placeholder string)
+        ◦ Models (Singular)
+            ▪ Block
+            ▪ Item / BlockItem
+        ◦ Textures (Plural)
+            ▪ Blocks
+            ▪ Items
+            ▪ Entities
+    • Data
+        ◦ Advancements
+        ◦ Loot Table
+            ▪ Blocks
+            ▪ Entities
+        ◦ Recipes
+        ◦ Tags
 """
 from os import path
 # from os import listdir
 from shutil import move, copy
 from copy import deepcopy
 import json
+
+
+# Setting up relevant filepaths
+# ========================================
+# The main\resources folder
+resources_path = r"C:\Users\Julio Hong\Documents\LapisLiozuli\Warehouse_Exhibition\src\main\resources"
+mod_id = "warex"
+
+# The main\resources\assets folder
+assets_path = path.join(resources_path, r"assets\\" + mod_id)
+# The assets\blockstates folder
+blockstates_path = path.join(assets_path, "blockstates")
+# The assets\lang folder
+lang_path = path.join(assets_path, "lang")
+lang_en_US_path = path.join(lang_path, "en_US.json")
+# The assets\models folder
+models_path = path.join(assets_path, "models")
+mdl_block_path = path.join(models_path, "block")
+mdl_item_path = path.join(models_path, "item")
+# The assets\textures folder
+textures_path = path.join(assets_path, "textures")
+txtr_blocks_path = path.join(textures_path, "block")
+txtr_items_path = path.join(textures_path, "items")
+txtr_entities_path = path.join(textures_path, "entity")
+
+# The main\resources\data folder
+data_path = path.join(resources_path, r"data\\" + mod_id)
+recipes_path = path.join(data_path, "recipes")
+loot_tables_path = path.join(data_path, "loot_tables")
+loot_blocks_path = path.join(loot_tables_path, "blocks")
+loot_entities_path = path.join(loot_tables_path, "entities")
+
+
+# Own Mod Graphics folder
+new_graphics_folder = r"C:\Users\Julio Hong\Desktop\Minecraft Stuffcraft\Own Mod Graphics\Warehouse_Exhibition"
+# Expected .png name?
 
 # Can capitalise for the en_US lang
 dye_colours = ['white', 'orange', 'magenta', 'light_blue', 'yellow', 'lime', 'pink', 'gray',
@@ -25,49 +81,7 @@ dye_colours_CN = ['白色', '橙色', '品红色', '淡蓝色', '黄色', '黄�
 # Temporary list to remind myself of the object types
 object_types_all = ['slime_block', 'slime_ball', 'slime_entity']
 
-# Setting up relevant filepaths
-# ========================================
-# The main\resources folder
-resources_path = r"C:\Users\Julio Hong\Documents\GitHub\Minecraft\Slimeology\src\main\resources"
-mod_id = "slimeology"
 
-# The main\resources\data folder
-data_path = path.join(resources_path, r"data\\" + mod_id)
-recipes_path = path.join(data_path, "recipes")
-loot_tables_path = path.join(data_path, "loot_tables")
-loot_blocks_path = path.join(loot_tables_path, "blocks")
-loot_entities_path = path.join(loot_tables_path, "entities")
-
-# The main\resources\assets folder
-armour_layer_path = path.join(resources_path, r"assets\minecraft\textures\models\armor")
-assets_path = path.join(resources_path, r"assets\\" + mod_id)
-
-# The assets\blockstates folder
-blockstates_path = path.join(assets_path, "blockstates")
-
-# The assets\models folder
-models_path = path.join(assets_path, "models")
-mdl_block_path = path.join(models_path, "block")
-mdl_item_path = path.join(models_path, "item")
-
-# The assets\particles folder
-# particles_path = path.join(assets_path, "particles")
-
-# The assets\textures folder
-textures_path = path.join(assets_path, "textures")
-txtr_blocks_path = path.join(textures_path, "block")
-txtr_items_path = path.join(textures_path, "items")
-txtr_entities_path = path.join(textures_path, "entity")
-# txtr_particles_path = path.join(textures_path, "particle", "particles")
-
-# The assets\lang folder
-lang_path = path.join(assets_path, "lang")
-lang_en_US_path = path.join(lang_path, "en_US.json")
-# lang_cn_ZH_path = path.join(lang_path, "cn_ZH.json")
-
-# Own Mod Graphics folder
-new_graphics_folder = r"C:\Users\Julio Hong\Desktop\Minecraft Stuffcraft\Own Mod Graphics\Slimycraft"
-# Expected .png name?
 
 # All functions
 # ========================================
