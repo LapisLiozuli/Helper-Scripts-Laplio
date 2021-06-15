@@ -48,8 +48,9 @@ resources_path = r"src\main\resources"
 template_modid = "modid"
 output_modid = "warex"
 
+# This arrangement allows me to add new folders in future.
 # The main\resources\assets folder
-assets_path = path.join(resources_path, r"assets")
+assets_path = path.join(resources_path, "assets")
 # Final paths.
 # The assets\blockstates folder
 blockstates_pathlet = "blockstates"
@@ -151,6 +152,16 @@ def modify_template_from_input(output_modid, assets_or_data, final_path, object_
         f.close()
         g.close()
 
+# Block object requires 4 JSONs: BlockState, Model/Block, Model/Item, LootTable/Block
+def add_block_jsons(output_modid, object_json, object_name, placeholder="placeholder.json"):
+    # BlockState
+    modify_template_from_input(output_modid, 'assets', blockstates_pathlet, object_json, object_name)
+    # Model/Block
+    modify_template_from_input(output_modid, 'assets', mdl_block_pathlet, object_json, object_name)
+    # Model/Item
+    modify_template_from_input(output_modid, 'assets', mdl_item_pathlet, object_json, object_name, "placeholder_blockitem.json")
+    # LootTable/Block
+    modify_template_from_input(output_modid, 'data', loot_blocks_pathlet, object_json, object_name)
 
 # Next step is to run multiple rounds for a block.
 
