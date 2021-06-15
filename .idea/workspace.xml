@@ -15,8 +15,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/fabric_json_creator.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="638">
-              <caret line="159" column="72" selection-start-line="159" selection-start-column="72" selection-end-line="159" selection-end-column="72" />
+            <state relative-caret-position="2720">
+              <caret line="244" lean-forward="true" selection-start-line="244" selection-end-line="244" />
               <folding>
                 <element signature="e#462#481#0" expanded="true" />
               </folding>
@@ -31,6 +31,8 @@
       <find>path</find>
       <find>_path</find>
       <find>output_path</find>
+      <find>object_json,</find>
+      <find>lang</find>
     </findStrings>
     <replaceStrings>
       <replace>_pathlet</replace>
@@ -160,8 +162,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/fabric_json_creator.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="638">
-          <caret line="159" column="72" selection-start-line="159" selection-start-column="72" selection-end-line="159" selection-end-column="72" />
+        <state relative-caret-position="2720">
+          <caret line="244" lean-forward="true" selection-start-line="244" selection-end-line="244" />
           <folding>
             <element signature="e#462#481#0" expanded="true" />
           </folding>

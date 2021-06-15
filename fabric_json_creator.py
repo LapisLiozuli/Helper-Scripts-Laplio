@@ -31,7 +31,7 @@ Resources folder structure
         ◦ Recipes
         ◦ Tags
 """
-from os import path
+from os import path, remove
 import pathlib
 # from os import listdir
 from shutil import move, copy
@@ -93,7 +93,7 @@ object_types_all = ['slime_block', 'slime_ball', 'slime_entity']
 # ========================================
 def text_guide_singular():
     print("Please input the parameters in this format:")
-    print("modify_template_from_input(output_modid, assets_or_data, final_path, object_json, object_name, placeholder='placeholder.json')")
+    print("add_block(cased_output_modid, cased_object_name)")
     # Include available pathlets
     print(assets_path)
     print(lang_pathlet)
@@ -108,9 +108,28 @@ def text_guide_singular():
 text_guide_singular()
 
 
+# Block object requires 4 JSONs: BlockState, Model/Block, Model/Item, LootTable/Block
+def add_block(cased_output_modid, cased_object_name):
+    # Set to lowercase for paths.
+    output_modid = cased_output_modid.lower()
+    object_name = cased_object_name.lower()
+    # BlockState
+    modify_template_from_input(output_modid, 'assets', blockstates_pathlet, object_name)
+    # Model/Block
+    modify_template_from_input(output_modid, 'assets', mdl_block_pathlet, object_name)
+    # Model/Item
+    modify_template_from_input(output_modid, 'assets', mdl_item_pathlet, object_name, "placeholder_blockitem.json")
+    # LootTable/Block
+    modify_template_from_input(output_modid, 'data', loot_blocks_pathlet, object_name)
+    # Add lang entry using another function.
+    output_lang_file = path.join(output_path, assets_path, output_modid, lang_en_US_pathlet)
+    append_lower_upper_to_json(output_modid, output_lang_file, 'Template_block', cased_object_name)
+
+
 # A function that takes in a path, modid and object name to create an appropriately-pathed JSON based on a template.
 # I'm actually missing the typing restrictions of Java. What are these variables supposed to be?
-def modify_template_from_input(output_modid, assets_or_data, final_path, object_json, object_name, placeholder="placeholder.json"):
+# Replaces existing JSONs if already present. Less risky with some form of version control available.
+def modify_template_from_input(output_modid, assets_or_data, final_path, object_name, placeholder="placeholder.json"):
     # template_path, resources_path and template_modid are global variables.
     # Choose between assets_path or data_path.
     if assets_or_data == "assets":
@@ -120,17 +139,20 @@ def modify_template_from_input(output_modid, assets_or_data, final_path, object_
         template_json = path.join(template_path, data_path, template_modid, final_path, placeholder)
         specific_output_path = path.join(output_path, data_path, output_modid, final_path)
     # Creates the output directories and subdirectories if they don't already exist.
-    print(specific_output_path)
     pathlib.Path(specific_output_path).mkdir(parents=True, exist_ok=True)
     # Create the output JSON.
-    output_json = path.join(specific_output_path, object_json + ".json")
+    output_json = path.join(specific_output_path, object_name + ".json")
+    # If output JSON already exists (maybe from previous attempts), then delete. Overall effect is replacement.
+    try:
+        remove(output_json)
+    except OSError:
+        pass
 
     with open(template_json, 'r+') as f:
         # Load JSON as Python object
         data = json.load(f)
         # Convert to string for string manipulation.
         input_str_json = json.dumps(data)
-        print('input_str_json is ' + input_str_json)
 
         # Replace all mentions of 'modid' with output_modid.
         output_str_json = input_str_json.replace('modid', output_modid)
@@ -140,30 +162,95 @@ def modify_template_from_input(output_modid, assets_or_data, final_path, object_
         for check in text_checks:
             if check in output_str_json:
                 output_str_json = output_str_json.replace(check, object_name)
-                print('output_str_json is ' + output_str_json)
 
         # Convert to JSON.
         output_data = json.loads(output_str_json)
+        # Opens file for reading and writing. File is created if it did not already exist.
+        handle_output_json(input_json=f, output_json=output_json, output_data=output_data)
+
+
+# Replaces paths and translations in en_US.json.
+def append_lower_upper_to_json(output_modid, input_json_path, cased_template_string, cased_output_string):
+    template_string = cased_template_string.lower()
+    output_string = cased_output_string.lower()
+    output_json_path = input_json_path
+    # Generates a new entry
+    # Check if the namespace is an advancemeent or not.
+    namespace = template_string.split('_')[1]
+    if namespace == 'advancements':
+        output_key = namespace + '.' + output_modid + '.root.' + output_string
+    else:
+        output_key = namespace + '.' + output_modid + '.' + output_string
+
+    with open(input_json_path, 'r+') as f:
+        # Load JSON as Python object
+        data = json.load(f)
+        # Convert to string for string manipulation.
+        input_str_json = json.dumps(data)
+
+        # Don't replace. Append a new key-value pair after the template entry.
+        input_list_json = input_str_json.split(cased_template_string)
+        input_list_json.insert(1, cased_template_string + '", "' + output_key + '": "' + cased_output_string)
+        output_str_json = ''.join(input_list_json)
+
+        # Convert to JSON.
+        output_data = json.loads(output_str_json)
+        # If output JSON already exists (maybe from previous attempts), then delete. Overall effect is replacement.
+        f.close()
+        try:
+            remove(input_json_path)
+        except OSError:
+            pass
 
         # Opens file for reading and writing. File is created if it did not already exist.
-        g = open(output_json, 'a+')
-        g.seek(0)
-        json.dump(output_data, g, indent=2, separators=(',', ':'))
-        f.close()
-        g.close()
+        handle_output_json(input_json=f, output_json=output_json_path, output_data=output_data)
 
-# Block object requires 4 JSONs: BlockState, Model/Block, Model/Item, LootTable/Block
-def add_block_jsons(output_modid, object_json, object_name, placeholder="placeholder.json"):
-    # BlockState
-    modify_template_from_input(output_modid, 'assets', blockstates_pathlet, object_json, object_name)
-    # Model/Block
-    modify_template_from_input(output_modid, 'assets', mdl_block_pathlet, object_json, object_name)
-    # Model/Item
-    modify_template_from_input(output_modid, 'assets', mdl_item_pathlet, object_json, object_name, "placeholder_blockitem.json")
-    # LootTable/Block
-    modify_template_from_input(output_modid, 'data', loot_blocks_pathlet, object_json, object_name)
 
-# Next step is to run multiple rounds for a block.
+def handle_output_json(input_json, output_json, output_data):
+    g = open(output_json, 'a+')
+    g.seek(0)
+    json.dump(output_data, g, indent=2, separators=(',', ':'))
+    g.close()
+    input_json.close()
+    try:
+        input_json.close()
+    except FileNotFoundError:
+        pass
+
+
+# Renames modid in the default en_US.json.
+def rename_lang_file(cased_output_modid):
+    # Set to lowercase for paths.
+    output_modid = cased_output_modid.lower()
+    template_lang_file = path.join(template_path, assets_path, template_modid, lang_en_US_pathlet)
+    output_lang_file = path.join(output_path, assets_path, output_modid, lang_en_US_pathlet)
+    # If output JSON already exists (maybe from previous attempts), then delete. Overall effect is replacement.
+    try:
+        remove(output_lang_file)
+    except OSError:
+        pass
+
+    with open(template_lang_file, 'r+') as f:
+        # Load JSON as Python object
+        data = json.load(f)
+        # Convert to string for string manipulation.
+        input_str_json = json.dumps(data)
+        # Replace all mentions of 'modid' with output_modid.
+        output_str_json = input_str_json.replace('modid', output_modid)
+        output_str_json = output_str_json.replace('Translated_MODID', cased_output_modid)
+        # Convert to JSON.
+        output_data = json.loads(output_str_json)
+        # Opens file for reading and writing. File is created if it did not already exist.
+        handle_output_json(input_json=f, output_json=output_lang_file, output_data=output_data)
+
+
+
+
+
+
+
+
+
 
 # A function to generate the object name based on all available colours
 def generate_dyed_objects(object_type, dye_colours, suffix=''):
