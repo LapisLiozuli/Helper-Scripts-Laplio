@@ -31,7 +31,7 @@ Resources folder structure
         ◦ Recipes
         ◦ Tags
 """
-from os import path, remove
+from os import path, remove, rename
 import pathlib
 # from os import listdir
 from shutil import move, copy
@@ -44,6 +44,7 @@ import json
 # The main\resources folder
 template_path = r"C:\Users\Julio Hong\Documents\LapisLiozuli\laplio-template-mod"
 output_path = r"C:\Users\Julio Hong\Documents\LapisLiozuli\Warehouse-Exhibition-MC"
+test_path = r"C:\Users\Julio Hong\Documents\LapisLiozuli\test-copy"
 resources_path = r"src\main\resources"
 template_modid = "modid"
 output_modid = "warex"
@@ -56,7 +57,7 @@ assets_path = path.join(resources_path, "assets")
 blockstates_pathlet = "blockstates"
 # The assets\lang folder
 lang_pathlet = "lang"
-lang_en_US_pathlet = path.join(lang_pathlet, "en_US.json")
+lang_en_us_pathlet = path.join(lang_pathlet, "en_us.json")
 # The assets\models folder
 models_pathlet = "models"
 mdl_block_pathlet = path.join(models_pathlet, "block")
@@ -80,7 +81,7 @@ loot_entities_pathlet = "entities"
 new_graphics_folder = r"C:\Users\Julio Hong\Desktop\Minecraft Stuffcraft\Own Mod Graphics\Warehouse_Exhibition"
 # Expected .png name?
 
-# Can capitalise for the en_US lang
+# Can capitalise for the en_us lang
 dye_colours = ['white', 'orange', 'magenta', 'light_blue', 'yellow', 'lime', 'pink', 'gray',
                'light_gray', 'cyan', 'purple', 'blue', 'brown', 'green', 'red', 'black']
 dye_colours_CN = ['白色', '橙色', '品红色', '淡蓝色', '黄色', '黄绿色', '粉红色', '灰色',
@@ -122,7 +123,7 @@ def add_block(cased_output_modid, cased_object_name):
     # LootTable/Block
     modify_template_from_input(output_modid, 'data', loot_blocks_pathlet, object_name)
     # Add lang entry using another function.
-    output_lang_file = path.join(output_path, assets_path, output_modid, lang_en_US_pathlet)
+    output_lang_file = path.join(output_path, assets_path, output_modid, lang_en_us_pathlet)
     append_lower_upper_to_json(output_modid, output_lang_file, 'Template_block', cased_object_name)
 
 
@@ -169,7 +170,7 @@ def modify_template_from_input(output_modid, assets_or_data, final_path, object_
         handle_output_json(input_json=f, output_json=output_json, output_data=output_data)
 
 
-# Replaces paths and translations in en_US.json.
+# Replaces paths and translations in en_us.json.
 def append_lower_upper_to_json(output_modid, input_json_path, cased_template_string, cased_output_string):
     template_string = cased_template_string.lower()
     output_string = cased_output_string.lower()
@@ -218,12 +219,12 @@ def handle_output_json(input_json, output_json, output_data):
         pass
 
 
-# Renames modid in the default en_US.json.
+# Renames modid in the default en_us.json.
 def rename_lang_file(cased_output_modid):
     # Set to lowercase for paths.
     output_modid = cased_output_modid.lower()
-    template_lang_file = path.join(template_path, assets_path, template_modid, lang_en_US_pathlet)
-    output_lang_file = path.join(output_path, assets_path, output_modid, lang_en_US_pathlet)
+    template_lang_file = path.join(template_path, assets_path, template_modid, lang_en_us_pathlet)
+    output_lang_file = path.join(output_path, assets_path, output_modid, lang_en_us_pathlet)
     # If output JSON already exists (maybe from previous attempts), then delete. Overall effect is replacement.
     try:
         remove(output_lang_file)
@@ -244,10 +245,74 @@ def rename_lang_file(cased_output_modid):
         handle_output_json(input_json=f, output_json=output_lang_file, output_data=output_data)
 
 
+def mod_renamer(output_repo_path, cased_new_modid):
+    # Create a list of filepaths for both template and output.
+    author_path = r'src\main\java\com\lapisliozuli'
+    new_modid = cased_new_modid.lower()
 
 
+    def create_paths(repo_path, repo_modid):
+        # Renaming file content only
+        # fabric.mod.json
+        fabric_mod_json = path.join(repo_path, resources_path, 'fabric.mod.json')
+        # gradle.properties
+        gradle_properties = path.join(repo_path, 'gradle.properties')
+        # en_us.json
+        en_us_json = path.join(repo_path, assets_path, repo_modid, lang_en_us_pathlet)
+        # README.md
+        readme_md = path.join(repo_path, 'README.md')
+
+        # Renaming files
+        # modid.mixins.json
+        mixins_json = path.join(repo_path, resources_path, 'modid.mixins.json')
+        # ExampleMod
+        initialiser = path.join(repo_path, author_path, repo_modid, 'ExampleMod.java')
+        # ExampleModClient
+        initialiser_client = path.join(repo_path, author_path, repo_modid, 'ExampleModClient.java')
+
+        return [fabric_mod_json, gradle_properties, en_us_json, readme_md, mixins_json, initialiser, initialiser_client]
+
+    template_paths = create_paths(template_path, template_modid)
+    output_paths = create_paths(output_repo_path, new_modid)
+
+    # Need to rename folders first. Might need intermediate paths.
+    rename(path.join(output_repo_path, author_path, template_modid), path.join(output_repo_path, author_path, new_modid))
+    rename(path.join(output_repo_path, assets_path, template_modid), path.join(output_repo_path, assets_path, new_modid))
+    rename(path.join(output_repo_path, data_path, template_modid), path.join(output_repo_path, data_path, new_modid))
+
+    # Traverse the filepaths to replace content and save in output repo.
+    # Currently this dupes code rather than replacing.
+    for i in range(len(template_paths)):
+        with open(template_paths[i], 'r') as fin:
+            filedata = fin.read()
+            filedata = filedata.replace('modid', new_modid)
+            filedata = filedata.replace('ExampleMod', cased_new_modid)
+        with open(output_paths[i], 'a+') as fout:
+            fout.write(filedata)
+        fin.close()
+        fout.close()
 
 
+        # # input file
+        # fin = open(template_paths[i], "rt")
+        # # If output JSON already exists (maybe from previous attempts), then delete. Overall effect is replacement.
+        # try:
+        #     remove(output_paths[i])
+        # except OSError:
+        #     pass
+        # # output file to write the result to
+        # fout = open(output_paths[i], "a+")
+        # # for each line in the input file
+        # for line in fin:
+        #     # read replace the string and write to output file
+        #     fout.write(line.replace('modid', cased_new_modid.lower()))
+        #     fout.write(line.replace('ExampleMod', cased_new_modid))
+        # # close input and output files
+        # fin.close()
+        # fout.close()
+
+    # Then traverse some of the files to replace the name.
+    # Create copy of new file with new filename, then delete old copy.
 
 
 
@@ -463,7 +528,7 @@ def transfer_block_jsons(toggle_list, template_dict, source_path, dyed_block_lis
     if toggle_list[5] == '1':
         # Add to lang (needs its own function)
         # DONE
-        translate_to_lang(object, obj_type, lang_seed, language='en_US')
+        translate_to_lang(object, obj_type, lang_seed, language='en_us')
 
     # Put lists of added objects together, so at least can move them together too.
 
@@ -476,7 +541,7 @@ def transfer_block_jsons(toggle_list, template_dict, source_path, dyed_block_lis
 #     lang_json[namespace_obj] = obj_translation
 
 
-def translate_to_lang(item_block_entity, obj_type, lang_seed, language='en_US'):
+def translate_to_lang(item_block_entity, obj_type, lang_seed, language='en_us'):
     lang_json = path.join(lang_path, language + '.json')
     prefix = obj_type + '.' + mod_id + '.'
 
